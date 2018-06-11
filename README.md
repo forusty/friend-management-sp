@@ -1,18 +1,18 @@
-# Start up Docker
+## Start up Docker
 
 ```sh
 chmod +x ./start.sh
 ./start.sh
 ```
 
-# Stop Docker
+## Stop Docker
 
 ```sh
 chmod +x ./stop.sh
 ./stop.sh
 ```
 
-# Down Docker
+## Down Docker
 
 ```sh
 chmod +x ./down.sh
