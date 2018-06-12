@@ -20,7 +20,7 @@ chmod +x ./down.sh
 ```
 
 ## Express JS
-Go to http://localhost:1800 in the browser
+Go to http://localhost:3000 in the browser
 
 ## Neo4j Login
 Go to http://localhost:17474/browser/ in the browser
