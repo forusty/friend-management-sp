@@ -31,8 +31,9 @@ app.post('/addConnection', function (req, res, next) {
     };
 
     if (friends.length < 2) {
+        res.status(400);
         jsonResponse.success = false;
-        jsonResponse.message = "A connection takes two. Please provide more than two email address :)";
+        jsonResponse.message = "A connection takes two. Please provide 2 email addresses :)";
         jsonResponse.code = 3;
         return res.json(jsonResponse)
     }
@@ -78,37 +79,106 @@ app.post('/addConnection', function (req, res, next) {
     }, friends[0], friends[1], jsonResponse)
 })
 
-app.get('/addRelation', function (req, res, next) {
-    neo4jHelper.findRelation(function (err, records) {
+/**
+ * 0 - No error
+ * 1 - Generic Error Code
+ * 2 - No email given
+ */
+app.post('/getFriendList', function (req, res, next) {
+    if(typeof req.body.email === 'undefined')
+    {
+        res.status(400);
+        var jsonResponse = {};
+        jsonResponse.message = "Please provide an email address";
+        jsonResponse.success = false;
+        jsonResponse.code = 2;
+        return res.send(jsonResponse);
+    }
+
+    var email = req.body.email;
+    neo4jHelper.findNode(function (err, records) {
         if (err) return next(err);
-        var result = {};
-        if (records.length > 0) {
-            result.status = "success";
-            result.message = "Relationship Exist";
-            res.json(result);
+        var jsonResponse = {
+            friends:[],
+            count:0
+        };
+        if(records.length > 0)
+        {
+            jsonResponse.count = records.length;
+
+            var friends = [];
+            records.map(record => { // Iterate through records
+                friends.push(record.get("email"));
+                // console.log( record._fields ); // Access the name property from the RETURN statement
+            });
+            jsonResponse.friends = friends;
+            jsonResponse.message = "Here are all your friends";
+            jsonResponse.code = 0;
         }
-        else if (records.length === 0) {
-            neo4jHelper.createRelation(function (err, node) {
-                if (err) {
-                    result.status = "unsuccessful";
-                    result.message = "Relationship Not Created";
-                }
-                else {
-                    result.status = "success";
-                    result.message = "Relationship Created";
-                }
-                res.json(result);
-            }, "youjun89@gmail.com", "youjun9@gmail.com")
-        }
-        // handles edge case where error did not trigger of records neither 0 or more than 0 eg. -1
-        else {
-            result.status = "unsuccessful";
-            result.message = "Unknown Error";
-            res.json(result);
+        else{
+            jsonResponse.message = "It seems like you have no friends :(";
+            jsonResponse.code = 0;
         }
 
-    }, "youjun89@gmail.com", "youjun9@gmail.com")
-});
+        jsonResponse.success = true;
+        return res.send(jsonResponse);
+    }, email)
+})
+
+/**
+ * 0 - No error
+ * 1 - Generic Error Code
+ * 2 - No email given
+ * 3 - 1 email address given
+ */
+app.post('/getCommonFriendList', function (req, res, next) {
+    if(typeof req.body.friends === 'undefined')
+    {
+        res.status(400);
+        var jsonResponse = {};
+        jsonResponse.message = "Please provide an email address.";
+        jsonResponse.success = false;
+        jsonResponse.code = 2;
+        return res.send(jsonResponse);
+    }
+    else if(req.body.friends.length<2){
+        res.status(400);
+        var jsonResponse = {};
+        jsonResponse.message = "Need one more emaill address to find common friends.";
+        jsonResponse.success = false;
+        jsonResponse.code = 3;
+        return res.send(jsonResponse);
+    }
+    
+    var friends = req.body.friends;
+    neo4jHelper.findCommonNode(function (err, records) {
+        if (err) return next(err);
+        var jsonResponse = {
+            friends:[],
+            count:0
+        };
+        if(records.length > 0)
+        {
+            jsonResponse.count = records.length;
+
+            var friends = [];
+            records.map(record => { // Iterate through records
+                friends.push(record.get("email"));
+                // console.log( record._fields ); // Access the name property from the RETURN statement
+            });
+            jsonResponse.friends = friends;
+            jsonResponse.message = "Here are all your friends";
+            jsonResponse.code = 0;
+        }
+        else{
+            jsonResponse.message = "It seems like you have no common friends :(";
+            jsonResponse.code = 0;
+        }
+
+        jsonResponse.success = true;
+        return res.send(jsonResponse);
+    }, friends[0],friends[1])
+})
 
 app.get('/tools/drop', function (req, res, next) {
     neo4jHelper.dropDb(function (err, result) {
@@ -118,8 +188,9 @@ app.get('/tools/drop', function (req, res, next) {
 });
 
 app.use(function (err, req, res, next) {
+    console.log(err);
     res.status(err.status || 500);
-    res.json({ "success": false, "message": "Uh-oh, Something terrible has went wrong!", "error_code": -1 });
+    res.json({ "success": false, "message": "Uh-oh, Something terrible has went wrong!", "code": 1 });
 });
 
 // Use middleware to set the default Content-Type

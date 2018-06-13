@@ -27,6 +27,21 @@ var neo4jHelper = {
         });
     },
 
+    findNode: function (callback, userEmail) {
+        var query = "Match (a:Person)-[:FOLLOWS]-(b:Person) where a.email={userEmailParam} RETURN b.email as email";
+        const session = driver.session();
+        const resultPromise = session.run(query, { userEmailParam: userEmail });
+
+        resultPromise.then(result => {
+            session.close();
+            // on application exit:
+            driver.close();
+            callback(null, result.records);
+        }).catch(function (error) {
+            callback(error, null);
+        });
+    },
+
     createRelation: function (callback, userEmail, followerEmail) {
         var query = "MERGE (a:Person {email:{userEmailParam}}) ON CREATE SET a.email={userEmailParam}";
         query+="MERGE (b:Person {email:{followerEmailParam}}) ON CREATE SET b.email={followerEmailParam}";
@@ -61,6 +76,24 @@ var neo4jHelper = {
             callback(error, null,userEmail,followerEmail,jsonResponse);
         });
     },
+
+    findCommonNode: function (callback, userEmail, userEmail2) {
+        var query = "Match (a:Person)-[:FOLLOWS]-(b:Person)-[:FOLLOWS]-(c:Person) ";
+        query += "where a.email= {userEmailParam} and c.email={userEmail2Param} return b.email as email"
+
+        const session = driver.session();
+        const resultPromise = session.run(query, { userEmailParam: userEmail, userEmail2Param: userEmail2 });
+
+        resultPromise.then(result => {
+            session.close();
+            // on application exit:
+            driver.close();
+            callback(null, result.records);
+        }).catch(function (error) {
+            callback(error, null);
+        });
+    },
+
     dropDb: function (callback) {
         const session = driver.session();
         const resultPromise = session.run(
