@@ -3,6 +3,8 @@ var chaiHttp = require('chai-http');
 var app = require('../server');
 var neo4jHelper = require('../neo4jHelper.js');
 
+require("./neo4j_test.js");
+
 var expect = chai.expect;
 
 chai.use(chaiHttp);
