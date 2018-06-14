@@ -191,11 +191,35 @@ describe('App', function () {
                 });
         });
 
-        it('should send a request with no email address', function (done) {
+        it('should send a request with no email field', function (done) {
             chai.request(app)
                 .post('/getFriendList')
                 .set('content-type', 'application/x-www-form-urlencoded')
                 .send()
+                .then(function (res) {
+                    expect(res).to.have.status(400);
+                    expect(res.body).to.be.a('object');
+
+                    expect(res.body).to.have.property('success');
+                    expect(res.body.success).to.be.false;
+
+                    expect(res.body).to.have.property('message');
+                    expect(res.body.message).to.be.a('string');
+
+                    expect(res.body).to.have.property('code');
+                    expect(res.body.code).to.be.a('number').to.equal(2);
+
+                    done();
+                }).catch(function (err) {
+                    done(err);
+                });
+        });
+
+        it('should send a request with empty email field', function (done) {
+            chai.request(app)
+                .post('/getFriendList')
+                .set('content-type', 'application/x-www-form-urlencoded')
+                .send({email:""})
                 .then(function (res) {
                     expect(res).to.have.status(400);
                     expect(res.body).to.be.a('object');
