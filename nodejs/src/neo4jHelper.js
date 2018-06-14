@@ -28,7 +28,7 @@ var neo4jHelper = {
     },
 
     findFollowNode: function (callback, userEmail) {
-        var query = "Match (a:Person)-[:FOLLOWS]-(b:Person) where a.email={userEmailParam} RETURN b.email as email";
+        var query = "Match (a:Person)-[:CONNECT]-(b:Person) where a.email={userEmailParam} RETURN b.email as email";
         const session = driver.session();
         const resultPromise = session.run(query, { userEmailParam: userEmail });
 
@@ -45,7 +45,7 @@ var neo4jHelper = {
     createRelation: function (callback, userEmail, followerEmail) {
         var query = "MERGE (a:Person {email:{userEmailParam}}) ON CREATE SET a.email={userEmailParam}";
         query+="MERGE (b:Person {email:{followerEmailParam}}) ON CREATE SET b.email={followerEmailParam}";
-        query+="MERGE (a)-[:FOLLOWS]-(b)";
+        query+="MERGE (a)-[:CONNECT]-(b)";
 
         const session = driver.session();
         const resultPromise = session.run(query, { userEmailParam: userEmail, followerEmailParam: followerEmail });
@@ -79,7 +79,7 @@ var neo4jHelper = {
     findRelation: function (callback, userEmail, followerEmail, jsonResponse) {
         var query = "Match (a:Person) where a.email={userEmailParam} ";
         query += "Match (b:Person) where b.email={followerEmailParam} ";
-        query += "Match (a)-[:FOLLOWS]-(b) return a,b";
+        query += "Match (a)-[:CONNECT]-(b) return a,b";
 
         const session = driver.session();
         const resultPromise = session.run(query, { userEmailParam: userEmail, followerEmailParam: followerEmail });
@@ -95,7 +95,7 @@ var neo4jHelper = {
     },
 
     findCommonNode: function (callback, userEmail, userEmail2) {
-        var query = "Match (a:Person)-[:FOLLOWS]-(b:Person)-[:FOLLOWS]-(c:Person) ";
+        var query = "Match (a:Person)-[:CONNECT]-(b:Person)-[:CONNECT]-(c:Person) ";
         query += "where a.email= {userEmailParam} and c.email={userEmail2Param} return b.email as email"
 
         const session = driver.session();
