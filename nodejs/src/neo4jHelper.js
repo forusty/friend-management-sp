@@ -1,7 +1,7 @@
 'use strict';
 const neo4j = require('neo4j-driver').v1;
-// const driver = neo4j.driver("bolt://neo4j:7687", neo4j.auth.basic("neo4j", "neo4jsp"));
-const driver = neo4j.driver("bolt://localhost:17687", neo4j.auth.basic("neo4j", "neo4jsp"));
+const driver = neo4j.driver("bolt://neo4j:7687", neo4j.auth.basic("neo4j", "neo4jsp"));
+// const driver = neo4j.driver("bolt://localhost:17687", neo4j.auth.basic("neo4j", "neo4jsp"));
 
 /**
  * ServiceUnavailable - neo4j not up yet
@@ -42,7 +42,7 @@ var neo4jHelper = {
         });
     },
 
-    createRelation: function (callback, userEmail, followerEmail) {
+    createConnection: function (callback, userEmail, followerEmail) {
         var query = "MERGE (a:Person {email:{userEmailParam}}) ON CREATE SET a.email={userEmailParam}";
         query+="MERGE (b:Person {email:{followerEmailParam}}) ON CREATE SET b.email={followerEmailParam}";
         query+="MERGE (a)-[:CONNECT]-(b)";
@@ -63,6 +63,23 @@ var neo4jHelper = {
         var query = "MERGE (a:Person {email:{requestorParam}}) ON CREATE SET a.email={requestorParam}";
         query+="MERGE (b:Person {email:{targetParam}}) ON CREATE SET b.email={targetParam}";
         query+="MERGE (a)-[:SUBSCRIBE]->(b)";
+
+        const session = driver.session();
+        const resultPromise = session.run(query, { requestorParam: requestor, targetParam: target });
+        resultPromise.then(result => {
+            session.close();
+            // on application exit:
+            driver.close();
+            callback(null, "success");
+        }).catch(function (error) {
+            callback(error, null);
+        });
+    },
+
+    createBlockConnection: function (callback, requestor, target) {
+        var query = "MERGE (a:Person {email:{requestorParam}}) ON CREATE SET a.email={requestorParam}";
+        query+="MERGE (b:Person {email:{targetParam}}) ON CREATE SET b.email={targetParam}";
+        query+="MERGE (a)-[:BLOCKS]->(b)";
 
         const session = driver.session();
         const resultPromise = session.run(query, { requestorParam: requestor, targetParam: target });
@@ -115,6 +132,24 @@ var neo4jHelper = {
         var query = "Match (a:Person) where a.email={requestorParam} ";
         query += "Match (b:Person) where b.email={targetParam} ";
         query += "Match (a)-[:SUBSCRIBE]->(b) return a,b";
+
+        const session = driver.session();
+        const resultPromise = session.run(query, { requestorParam: requestor, targetParam: target });
+
+        resultPromise.then(result => {
+            session.close();
+            // on application exit:
+            driver.close();
+            callback(null, result.records, requestor, target, jsonResponse);
+        }).catch(function (error) {
+            callback(error, null,requestor,target,jsonResponse);
+        });
+    },
+
+    findBlockConnection: function (callback, requestor, target, jsonResponse) {
+        var query = "Match (a:Person) where a.email={requestorParam} ";
+        query += "Match (b:Person) where b.email={targetParam} ";
+        query += "Match (a)-[:BLOCKS]->(b) return a,b";
 
         const session = driver.session();
         const resultPromise = session.run(query, { requestorParam: requestor, targetParam: target });

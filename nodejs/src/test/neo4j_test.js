@@ -16,7 +16,7 @@ describe('neo4jFunc Test', function () {
 
 		before(function (done) {
 			// run incase after case failed
-			neo4jHelper.createRelation(function (err, node) {
+			neo4jHelper.createConnection(function (err, node) {
 				done();
 			}, userEmail, followerEmail)
 		});

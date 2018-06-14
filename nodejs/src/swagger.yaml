@@ -37,7 +37,7 @@ paths:
           $ref: "#/definitions/Connection"
       responses:
         200:
-          description: "Codes -Description\n0 - No error\n1 - Generic Error Code\n2 - Neo4J DB not up (ServiceUnavailable)\n3 - Less than 2 email address given\n4 - Missing Key or Empty Value"
+          description: "Codes -Description\n0 - No error\n1 - Generic Error Code\n2 - Neo4J DB not up (ServiceUnavailable)\n3 - Less than 2 email address given\n4 - Missing Key or Empty Value\n5 - Connections cannot be made between blocked contacts"
           schema:
             $ref: "#/definitions/ConnectionResponse"
         405:

@@ -190,6 +190,185 @@ describe('App', function () {
         });
     });
 
+    describe('/blockConnection', function () {
+        it('should send requestor and target', function (done) {
+            chai.request(app)
+                .post('/blockConnection')
+                .set('content-type', 'application/json')
+                .send({ requestor: email2, target: email3 })
+                .then(function (res) {
+                    expect(res).to.have.status(200);
+                    expect(res.body).to.be.a('object');
+
+                    expect(res.body).to.have.property('success');
+                    expect(res.body.success).to.be.true;
+
+                    expect(res.body).to.have.property('message');
+                    expect(res.body.message).to.be.a('string');
+
+                    expect(res.body).to.have.property('code');
+                    expect(res.body.code).to.be.a('number').to.equal(0);
+
+                    expect(res.body).to.have.property('blocksMade');
+                    expect(res.body.blocksMade).to.be.a('array').to.have.lengthOf(1);
+
+                    expect(res.body).to.have.property('blocksExist');
+                    expect(res.body.blocksExist).to.be.a('array').to.have.lengthOf(0);
+                    done();
+                }).catch(function (err) {
+                    done(err);
+                });
+        });
+
+        it('should send the same requestor and target', function (done) {
+            chai.request(app)
+                .post('/blockConnection')
+                .set('content-type', 'application/json')
+                .send({ requestor: email2, target: email3 })
+                .then(function (res) {
+                    expect(res).to.have.status(200);
+                    expect(res.body).to.be.a('object');
+
+                    expect(res.body).to.have.property('success');
+                    expect(res.body.success).to.be.true;
+
+                    expect(res.body).to.have.property('message');
+                    expect(res.body.message).to.be.a('string');
+
+                    expect(res.body).to.have.property('code');
+                    expect(res.body.code).to.be.a('number').to.equal(0);
+
+                    expect(res.body).to.have.property('blocksMade');
+                    expect(res.body.blocksMade).to.be.a('array').to.have.lengthOf(0);
+
+                    expect(res.body).to.have.property('blocksExist');
+                    expect(res.body.blocksExist).to.be.a('array').to.have.lengthOf(1);
+                    done();
+                }).catch(function (err) {
+                    done(err);
+                });
+        });
+
+        it('should create a connection between 2 blocked contacts', function (done) {
+            chai.request(app)
+                .post('/addConnection')
+                .set('content-type', 'application/json')
+                .send({ friends: [email2, email3] })
+                .then(function (res) {
+                    expect(res).to.have.status(200);
+                    expect(res.body).to.be.a('object');
+
+                    expect(res.body).to.have.property('success');
+                    expect(res.body.success).to.be.false;
+
+                    expect(res.body).to.have.property('message');
+                    expect(res.body.message).to.be.a('string');
+
+                    expect(res.body).to.have.property('code');
+                    expect(res.body.code).to.be.a('number').to.equal(5);
+
+                    expect(res.body).to.have.property('connectionMade');
+                    expect(res.body.connectionMade).to.be.a('array').to.have.lengthOf(0);
+
+                    expect(res.body).to.have.property('connectionExist');
+                    expect(res.body.connectionExist).to.be.a('array').to.have.lengthOf(0);
+                    done();
+                }).catch(function (err) {
+                    done(err);
+                });
+        });
+
+        it('should send a request with no requestor or target key', function (done) {
+            chai.request(app)
+                .post('/blockConnection')
+                .set('content-type', 'application/json')
+                .send()
+                .then(function (res) {
+                    expect(res).to.have.status(400);
+                    expect(res.body).to.be.a('object');
+
+                    expect(res.body).to.have.property('success');
+                    expect(res.body.success).to.be.false;
+
+                    expect(res.body).to.have.property('message');
+                    expect(res.body.message).to.be.a('string');
+
+                    expect(res.body).to.have.property('code');
+                    expect(res.body.code).to.be.a('number').to.equal(4);
+
+                    expect(res.body).to.have.property('blocksMade');
+                    expect(res.body.blocksMade).to.be.a('array').to.have.lengthOf(0);
+
+                    expect(res.body).to.have.property('blocksExist');
+                    expect(res.body.blocksExist).to.be.a('array').to.have.lengthOf(0);
+
+                    done();
+                }).catch(function (err) {
+                    done(err);
+                });
+        });
+        
+        it('should send a request with only requestor', function (done) {
+            chai.request(app)
+                .post('/blockConnection')
+                .set('content-type', 'application/json')
+                .send({ requestor: email3 })
+                .then(function (res) {
+                    expect(res).to.have.status(400);
+                    expect(res.body).to.be.a('object');
+
+                    expect(res.body).to.have.property('success');
+                    expect(res.body.success).to.be.false;
+
+                    expect(res.body).to.have.property('message');
+                    expect(res.body.message).to.be.a('string');
+
+                    expect(res.body).to.have.property('code');
+                    expect(res.body.code).to.be.a('number').to.equal(4);
+
+                    expect(res.body).to.have.property('blocksMade');
+                    expect(res.body.blocksMade).to.be.a('array').to.have.lengthOf(0);
+
+                    expect(res.body).to.have.property('blocksExist');
+                    expect(res.body.blocksExist).to.be.a('array').to.have.lengthOf(0);
+
+                    done();
+                }).catch(function (err) {
+                    done(err);
+                });
+        });
+        
+        it('should send a request with only target', function (done) {
+            chai.request(app)
+                .post('/blockConnection')
+                .set('content-type', 'application/json')
+                .send({ target: email4 })
+                .then(function (res) {
+                    expect(res).to.have.status(400);
+                    expect(res.body).to.be.a('object');
+
+                    expect(res.body).to.have.property('success');
+                    expect(res.body.success).to.be.false;
+
+                    expect(res.body).to.have.property('message');
+                    expect(res.body.message).to.be.a('string');
+
+                    expect(res.body).to.have.property('code');
+                    expect(res.body.code).to.be.a('number').to.equal(4);
+
+                    expect(res.body).to.have.property('blocksMade');
+                    expect(res.body.blocksMade).to.be.a('array').to.have.lengthOf(0);
+
+                    expect(res.body).to.have.property('blocksExist');
+                    expect(res.body.blocksExist).to.be.a('array').to.have.lengthOf(0);
+
+                    done();
+                }).catch(function (err) {
+                    done(err);
+                });
+        });
+    });
+
     describe('/getFriendList', function () {
         it('should send a request of valid email address', function (done) {
             chai.request(app)
