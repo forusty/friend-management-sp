@@ -15,23 +15,6 @@ app.get('/', function (req, res, next) {
     res.redirect('/api-docs');
 });
 
-app.get('/add', function (req, res, next) {
-    var node = {
-        name: 'Darth Vader #1' + parseInt(Math.random() * 10),
-        sex: 'male'
-    };
-    neo4jHelper.insertNode(function (err, node) {
-        if (err) return next(err);
-        res.json(node);
-    }, node)
-});
-
-/**
- * 0 - No error
- * 1 - Generic Error Code
- * 2 - Neo4J DB not up (ServiceUnavailable)
- * 3 - Less than 2 email address given
- */
 app.post('/addConnection', function (req, res, next) {
     var friends = req.body.friends;
     var jsonResponse = {
@@ -88,13 +71,8 @@ app.post('/addConnection', function (req, res, next) {
     }, friends[0], friends[1], jsonResponse)
 })
 
-/**
- * 0 - No error
- * 1 - Generic Error Code
- * 2 - No email given
- */
 app.post('/getFriendList', function (req, res, next) {
-    if(typeof req.body.email === 'undefined')
+    if(typeof req.body.email === 'undefined' || req.body.email === '')
     {
         res.status(400);
         var jsonResponse = {};
@@ -134,12 +112,6 @@ app.post('/getFriendList', function (req, res, next) {
     }, email)
 })
 
-/**
- * 0 - No error
- * 1 - Generic Error Code
- * 2 - No email given
- * 3 - 1 email address given
- */
 app.post('/getCommonFriendList', function (req, res, next) {
     if(typeof req.body.friends === 'undefined')
     {
