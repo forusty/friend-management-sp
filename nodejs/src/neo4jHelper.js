@@ -27,7 +27,7 @@ var neo4jHelper = {
         });
     },
 
-    findNode: function (callback, userEmail) {
+    findFollowNode: function (callback, userEmail) {
         var query = "Match (a:Person)-[:FOLLOWS]-(b:Person) where a.email={userEmailParam} RETURN b.email as email";
         const session = driver.session();
         const resultPromise = session.run(query, { userEmailParam: userEmail });
@@ -49,6 +49,23 @@ var neo4jHelper = {
 
         const session = driver.session();
         const resultPromise = session.run(query, { userEmailParam: userEmail, followerEmailParam: followerEmail });
+        resultPromise.then(result => {
+            session.close();
+            // on application exit:
+            driver.close();
+            callback(null, "success");
+        }).catch(function (error) {
+            callback(error, null);
+        });
+    },
+
+    createSubscription: function (callback, requestor, target) {
+        var query = "MERGE (a:Person {email:{requestorParam}}) ON CREATE SET a.email={requestorParam}";
+        query+="MERGE (b:Person {email:{targetParam}}) ON CREATE SET b.email={targetParam}";
+        query+="MERGE (a)-[:SUBSCRIBE]->(b)";
+
+        const session = driver.session();
+        const resultPromise = session.run(query, { requestorParam: requestor, targetParam: target });
         resultPromise.then(result => {
             session.close();
             // on application exit:
@@ -91,6 +108,24 @@ var neo4jHelper = {
             callback(null, result.records);
         }).catch(function (error) {
             callback(error, null);
+        });
+    },
+
+    findSubscription: function (callback, requestor, target, jsonResponse) {
+        var query = "Match (a:Person) where a.email={requestorParam} ";
+        query += "Match (b:Person) where b.email={targetParam} ";
+        query += "Match (a)-[:SUBSCRIBE]->(b) return a,b";
+
+        const session = driver.session();
+        const resultPromise = session.run(query, { requestorParam: requestor, targetParam: target });
+
+        resultPromise.then(result => {
+            session.close();
+            // on application exit:
+            driver.close();
+            callback(null, result.records, requestor, target, jsonResponse);
+        }).catch(function (error) {
+            callback(error, null,requestor,target,jsonResponse);
         });
     },
 
