@@ -16,12 +16,21 @@ app.get('/', function (req, res, next) {
 });
 
 app.post('/addConnection', function (req, res, next) {
-    var friends = req.body.friends;
     var jsonResponse = {
         connectionMade: [],
         connectionExist: []
     };
 
+    if(typeof req.body.friends === 'undefined')
+    {
+        res.status(400);
+        jsonResponse.message = "Please provide an email address";
+        jsonResponse.success = false;
+        jsonResponse.code = 4;
+        return res.send(jsonResponse);
+    }
+
+    var friends = req.body.friends;
     if (friends.length < 2) {
         res.status(400);
         jsonResponse.success = false;
@@ -29,7 +38,7 @@ app.post('/addConnection', function (req, res, next) {
         jsonResponse.code = 3;
         return res.json(jsonResponse)
     }
-
+    
     neo4jHelper.findRelation(function (err, records, userEmail, followerEmail, jsonResponse) {
         if (err) return next(err);
         // when connection dosen't exist
@@ -78,12 +87,12 @@ app.post('/getFriendList', function (req, res, next) {
         var jsonResponse = {};
         jsonResponse.message = "Please provide an email address";
         jsonResponse.success = false;
-        jsonResponse.code = 2;
+        jsonResponse.code = 4;
         return res.send(jsonResponse);
     }
 
     var email = req.body.email;
-    neo4jHelper.findNode(function (err, records) {
+    neo4jHelper.findFollowNode(function (err, records) {
         if (err) return next(err);
         var jsonResponse = {
             friends:[],
@@ -119,7 +128,7 @@ app.post('/getCommonFriendList', function (req, res, next) {
         var jsonResponse = {};
         jsonResponse.message = "Please provide an email address.";
         jsonResponse.success = false;
-        jsonResponse.code = 2;
+        jsonResponse.code = 4;
         return res.send(jsonResponse);
     }
     else if(req.body.friends.length<2){
@@ -159,6 +168,66 @@ app.post('/getCommonFriendList', function (req, res, next) {
         jsonResponse.success = true;
         return res.send(jsonResponse);
     }, friends[0],friends[1])
+})
+
+app.post('/addSubscription', function (req, res, next) {
+    var jsonResponse = {
+        subscriptionMade: [],
+        subscriptionExist: []
+    };
+
+    if(typeof req.body.requestor === 'undefined' || req.body.requestor === '' || 
+        typeof req.body.target === 'undefined' || typeof req.body.target === '')
+    {
+        res.status(400);
+        jsonResponse.message = "Target/Requestor field is missing or empty.";
+        jsonResponse.success = false;
+        jsonResponse.code = 4;
+        return res.send(jsonResponse);
+    }
+    
+    var requestor = req.body.requestor;
+    var target = req.body.target;
+
+    neo4jHelper.findSubscription(function (err, records, requestor, target, jsonResponse) {
+        if (err) return next(err);
+        // when connection dosen't exist
+        if (records.length === 0) {
+            neo4jHelper.createSubscription(function (err, node) {
+                if (err) {
+                    if (err.code === 'ServiceUnavailable') {
+                        jsonResponse.message = "Our hamsters powering the site is currently taking a break. Please try again later.";
+                        jsonResponse.code = 2;
+                    }
+                    else {
+                        jsonResponse.message = "It seems that Bill has forgotten to pay our power bill. Please try again in awhile.";
+                        jsonResponse.code = 1;
+                    }
+                    jsonResponse.success = false;
+                    return res.json(jsonResponse)
+                }
+                else {
+                    jsonResponse.subscriptionMade.push([requestor, target]);
+                    jsonResponse.success = true;
+                    jsonResponse.message = "Connections Created";
+                    jsonResponse.code = 0;
+                    return res.json(jsonResponse)
+                }
+            }, requestor, target, jsonResponse)
+        }
+        // when connection exist
+        else if (records.length > 0) {
+            jsonResponse.subscriptionExist.push([requestor, target]);
+            jsonResponse.success = true;
+            jsonResponse.message = "Connections Exist";
+            jsonResponse.code = 0;
+            return res.json(jsonResponse)
+        }
+        // handles edge case where error did not trigger of records neither 0 or more than 0 eg. -1
+        else {
+            return next(err);
+        }
+    }, requestor, target, jsonResponse)
 })
 
 app.get('/tools/drop', function (req, res, next) {
