@@ -1,4 +1,4 @@
 data/*
 logs/*
-!data/.gitignore
-!logs/.gitignore
+!data/.gitkeep
+!logs/.gitkeep
