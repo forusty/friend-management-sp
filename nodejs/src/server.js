@@ -145,10 +145,9 @@ app.post('/getCommonFriendList', function (req, res, next) {
             var friends = [];
             records.map(record => { // Iterate through records
                 friends.push(record.get("email"));
-                // console.log( record._fields ); // Access the name property from the RETURN statement
             });
             jsonResponse.friends = friends;
-            jsonResponse.message = "Here are all your friends";
+            jsonResponse.message = "Here are all your common friends";
             jsonResponse.code = 0;
         }
         else {
@@ -187,7 +186,7 @@ app.post('/addSubscription', function (req, res, next) {
                 if (err) return dbConnectionError(err, res);
                 jsonResponse.subscriptionMade.push([requestor, target]);
                 jsonResponse.success = true;
-                jsonResponse.message = "Connections Created";
+                jsonResponse.message = "Subscription Created";
                 jsonResponse.code = 0;
                 return res.json(jsonResponse)
             }, requestor, target, jsonResponse)
@@ -196,7 +195,7 @@ app.post('/addSubscription', function (req, res, next) {
         else if (records.length > 0) {
             jsonResponse.subscriptionExist.push([requestor, target]);
             jsonResponse.success = true;
-            jsonResponse.message = "Connections Exist";
+            jsonResponse.message = "Subscription Exist";
             jsonResponse.code = 0;
             return res.json(jsonResponse)
         }
@@ -222,14 +221,14 @@ app.post('/blockConnection', function (req, res, next) {
     var target = req.body.target;
 
     neo4jHelper.findBlockConnection(function (err, records, requestor, target, jsonResponse) {
-        if (err) return next(err);
+        if (err) return dbConnectionError(err, res);
         // when connection dosen't exist
         if (records.length === 0) {
             neo4jHelper.createBlockConnection(function (err, node) {
                 if (err) return dbConnectionError(err, res);
                 jsonResponse.blocksMade.push([requestor, target]);
                 jsonResponse.success = true;
-                jsonResponse.message = "Connections Created";
+                jsonResponse.message = "Successfully block user";
                 jsonResponse.code = 0;
                 return res.json(jsonResponse)
             }, requestor, target, jsonResponse)
@@ -238,11 +237,53 @@ app.post('/blockConnection', function (req, res, next) {
         else if (records.length > 0) {
             jsonResponse.blocksExist.push([requestor, target]);
             jsonResponse.success = true;
-            jsonResponse.message = "Connections Exist";
+            jsonResponse.message = "User has already been blocked";
             jsonResponse.code = 0;
             return res.json(jsonResponse)
         }
     }, requestor, target, jsonResponse)
+})
+
+app.post('/getUpdateEmailList', function (req, res, next) {
+    var jsonResponse = {
+        recipients: [],
+        success:false
+    };
+    
+    if (typeof req.body.sender === 'undefined' || req.body.sender === '' ||
+        typeof req.body.text === 'undefined') {
+        res.status(400);
+        jsonResponse.message = "Sender/Text field is missing or empty.";
+        jsonResponse.code = 4;
+        return res.send(jsonResponse);
+    }
+
+    var sender = req.body.sender;
+    var text = req.body.text;
+
+    var textList = text.split(" ");
+
+    var mentionList = [];
+    textList.forEach(function(text) {
+        if(validateEmail(text)) mentionList.push(text);
+    });
+
+    neo4jHelper.findConnectOrSubscriptioneNodes(function (err, records, jsonResponse) {
+        if (err) return dbConnectionError(err, res);
+        	records.map(record => { // Iterate through records
+                mentionList.push(record.get("email"))
+            });
+            neo4jHelper.findUnblockConnectionByList(function (err, records, jsonResponse) {
+                if (err) return dbConnectionError(err, res);
+                records.map(record => { // Iterate through records
+                    jsonResponse.recipients.push(record.get("email"))
+                });
+                jsonResponse.success = true;
+                jsonResponse.message = "Updates Email List Created";
+                jsonResponse.code = 0;
+                return res.json(jsonResponse)
+            }, sender,mentionList,jsonResponse)
+    }, sender, jsonResponse)
 })
 
 app.get('/tools/drop', function (req, res, next) {
@@ -264,6 +305,11 @@ function dbConnectionError(err, res) {
     }
     jsonResponse.success = false;
     return res.json(jsonResponse)
+}
+
+function validateEmail(email) {
+    var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(email);
 }
 
 app.use(function (req, res, next) {
