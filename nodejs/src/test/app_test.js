@@ -26,7 +26,7 @@ describe('App', function () {
         after(function (done) {
             // runs after all tests in this block
             chai.request(app)
-                .post('/addConnection')
+                .post('/api/addConnection')
                 .set('content-type', 'application/json')
                 .send({ friends: [email1, email3] })
                 .then(function (res) {
@@ -43,7 +43,7 @@ describe('App', function () {
 
         it('should send 2 email address', function (done) {
             chai.request(app)
-                .post('/addConnection')
+                .post('/api/addConnection')
                 .set('content-type', 'application/json')
                 .send({ friends: [email1, email2] })
                 .then(function (res) {
@@ -72,7 +72,7 @@ describe('App', function () {
 
         it('should send the same 2 email address', function (done) {
             chai.request(app)
-                .post('/addConnection')
+                .post('/api/addConnection')
                 .set('content-type', 'application/json')
                 .send({ friends: [email1, email2] })
                 .then(function (res) {
@@ -101,7 +101,7 @@ describe('App', function () {
 
         it('should send a request with no friends key', function (done) {
             chai.request(app)
-                .post('/addConnection')
+                .post('/api/addConnection')
                 .set('content-type', 'application/json')
                 .send()
                 .then(function (res) {
@@ -131,7 +131,7 @@ describe('App', function () {
         
         it('should send a request of 0 email address', function (done) {
             chai.request(app)
-                .post('/addConnection')
+                .post('/api/addConnection')
                 .set('content-type', 'application/json')
                 .send({ friends: [] })
                 .then(function (res) {
@@ -161,7 +161,7 @@ describe('App', function () {
 
         it('should send a request of 1 email address', function (done) {
             chai.request(app)
-                .post('/addConnection')
+                .post('/api/addConnection')
                 .set('content-type', 'application/json')
                 .send({ friends: [email1] })
                 .then(function (res) {
@@ -194,7 +194,7 @@ describe('App', function () {
         after(function (done) {
             // create another subscription
             chai.request(app)
-                .post('/blockConnection')
+                .post('/api/blockConnection')
                 .set('content-type', 'application/json')
                 .send({ requestor: email3, target: email1 })
                 .then(function (res) {
@@ -211,7 +211,7 @@ describe('App', function () {
 
         it('should send a valid requestor and target', function (done) {
             chai.request(app)
-                .post('/blockConnection')
+                .post('/api/blockConnection')
                 .set('content-type', 'application/json')
                 .send({ requestor: email2, target: email3 })
                 .then(function (res) {
@@ -240,7 +240,7 @@ describe('App', function () {
 
         it('should send the same requestor and target', function (done) {
             chai.request(app)
-                .post('/blockConnection')
+                .post('/api/blockConnection')
                 .set('content-type', 'application/json')
                 .send({ requestor: email2, target: email3 })
                 .then(function (res) {
@@ -269,7 +269,7 @@ describe('App', function () {
 
         it('should create a connection between 2 blocked contacts', function (done) {
             chai.request(app)
-                .post('/addConnection')
+                .post('/api/addConnection')
                 .set('content-type', 'application/json')
                 .send({ friends: [email2, email3] })
                 .then(function (res) {
@@ -298,7 +298,7 @@ describe('App', function () {
 
         it('should create a connection between 2 blocked contacts', function (done) {
             chai.request(app)
-                .post('/addConnection')
+                .post('/api/addConnection')
                 .set('content-type', 'application/json')
                 .send({ friends: [email2, email3] })
                 .then(function (res) {
@@ -327,7 +327,7 @@ describe('App', function () {
 
         it('should send a request with no requestor or target key', function (done) {
             chai.request(app)
-                .post('/blockConnection')
+                .post('/api/blockConnection')
                 .set('content-type', 'application/json')
                 .send()
                 .then(function (res) {
@@ -357,7 +357,7 @@ describe('App', function () {
         
         it('should send a request with only requestor', function (done) {
             chai.request(app)
-                .post('/blockConnection')
+                .post('/api/blockConnection')
                 .set('content-type', 'application/json')
                 .send({ requestor: email3 })
                 .then(function (res) {
@@ -387,7 +387,7 @@ describe('App', function () {
         
         it('should send a request with only target', function (done) {
             chai.request(app)
-                .post('/blockConnection')
+                .post('/api/blockConnection')
                 .set('content-type', 'application/json')
                 .send({ target: email4 })
                 .then(function (res) {
@@ -419,7 +419,7 @@ describe('App', function () {
     describe('/getFriendList', function () {
         it('should send a request of valid email address', function (done) {
             chai.request(app)
-                .post('/getFriendList')
+                .post('/api/getFriendList')
                 .set('content-type', 'application/json')
                 .send({ email: email1 })
                 .then(function (res) {
@@ -449,7 +449,7 @@ describe('App', function () {
 
         it('should send a request of invalid email address', function (done) {
             chai.request(app)
-                .post('/getFriendList')
+                .post('/api/getFriendList')
                 .set('content-type', 'application/json')
                 .send({ email: email1 + "-invalid" })
                 .then(function (res) {
@@ -479,7 +479,7 @@ describe('App', function () {
 
         it('should send a request with no email field', function (done) {
             chai.request(app)
-                .post('/getFriendList')
+                .post('/api/getFriendList')
                 .set('content-type', 'application/json')
                 .send()
                 .then(function (res) {
@@ -503,7 +503,7 @@ describe('App', function () {
 
         it('should send a request with empty email value', function (done) {
             chai.request(app)
-                .post('/getFriendList')
+                .post('/api/getFriendList')
                 .set('content-type', 'application/json')
                 .send({email:''})
                 .then(function (res) {
@@ -530,7 +530,7 @@ describe('App', function () {
         before(function (done) {
             // create another connection before testing
             chai.request(app)
-                .post('/addConnection')
+                .post('/api/addConnection')
                 .set('content-type', 'application/json')
                 .send({ friends: [email2, email4] })
                 .then(function (res) {
@@ -540,7 +540,7 @@ describe('App', function () {
                     expect(res.body).to.have.property('success');
                     expect(res.body.success).to.be.true;
                     chai.request(app)
-                        .post('/addConnection')
+                        .post('/api/addConnection')
                         .set('content-type', 'application/json')
                         .send({ friends: [email3, email4] })
                         .then(function (res) {
@@ -560,7 +560,7 @@ describe('App', function () {
 
         it('should send a request of 2 valid email address', function (done) {
             chai.request(app)
-                .post('/getCommonFriendList')
+                .post('/api/getCommonFriendList')
                 .set('content-type', 'application/json')
                 .send({ friends: [email2,email3] })
                 .then(function (res) {
@@ -590,7 +590,7 @@ describe('App', function () {
 
         it('should send a request of 2 invalid email address', function (done) {
             chai.request(app)
-                .post('/getCommonFriendList')
+                .post('/api/getCommonFriendList')
                 .set('content-type', 'application/json')
                 .send({ friends: [email1,email3] })
                 .then(function (res) {
@@ -620,7 +620,7 @@ describe('App', function () {
 
         it('should send a request with no email address', function (done) {
             chai.request(app)
-                .post('/getCommonFriendList')
+                .post('/api/getCommonFriendList')
                 .set('content-type', 'application/json')
                 .send()
                 .then(function (res) {
@@ -644,7 +644,7 @@ describe('App', function () {
 
         it('should send a request with 1 email address', function (done) {
             chai.request(app)
-                .post('/getCommonFriendList')
+                .post('/api/getCommonFriendList')
                 .set('content-type', 'application/json')
                 .send({friends:[email1]})
                 .then(function (res) {
@@ -671,7 +671,7 @@ describe('App', function () {
         after(function (done) {
             // create another subscription
             chai.request(app)
-                .post('/addSubscription')
+                .post('/api/addSubscription')
                 .set('content-type', 'application/json')
                 .send({ requestor: email2, target: email1 })
                 .then(function (res) {
@@ -688,7 +688,7 @@ describe('App', function () {
 
         it('should send requestor and target', function (done) {
             chai.request(app)
-                .post('/addSubscription')
+                .post('/api/addSubscription')
                 .set('content-type', 'application/json')
                 .send({ requestor: email1, target: email2 })
                 .then(function (res) {
@@ -717,7 +717,7 @@ describe('App', function () {
 
         it('should send the same requestor and target', function (done) {
             chai.request(app)
-                .post('/addSubscription')
+                .post('/api/addSubscription')
                 .set('content-type', 'application/json')
                 .send({ requestor: email1, target: email2 })
                 .then(function (res) {
@@ -746,7 +746,7 @@ describe('App', function () {
 
         it('should send a request with no requestor or target key', function (done) {
             chai.request(app)
-                .post('/addSubscription')
+                .post('/api/addSubscription')
                 .set('content-type', 'application/json')
                 .send()
                 .then(function (res) {
@@ -776,7 +776,7 @@ describe('App', function () {
         
         it('should send a request with only requestor', function (done) {
             chai.request(app)
-                .post('/addSubscription')
+                .post('/api/addSubscription')
                 .set('content-type', 'application/json')
                 .send({ requestor: email1 })
                 .then(function (res) {
@@ -806,7 +806,7 @@ describe('App', function () {
         
         it('should send a request with only target', function (done) {
             chai.request(app)
-                .post('/addSubscription')
+                .post('/api/addSubscription')
                 .set('content-type', 'application/json')
                 .send({ target: email1 })
                 .then(function (res) {
@@ -838,7 +838,7 @@ describe('App', function () {
     describe('/getUpdateEmailList', function () {
         it('should send a valid email and text', function (done) {
             chai.request(app)
-                .post('/getUpdateEmailList')
+                .post('/api/getUpdateEmailList')
                 .set('content-type', 'application/json')
                 .send({ sender: email1, text: "Hello World! one@gmail.com" })
                 .then(function (res) {
@@ -864,7 +864,7 @@ describe('App', function () {
 
         it('should send only email and empty string text', function (done) {
             chai.request(app)
-                .post('/getUpdateEmailList')
+                .post('/api/getUpdateEmailList')
                 .set('content-type', 'application/json')
                 .send({ sender:email1, text: ""})
                 .then(function (res) {
@@ -890,7 +890,7 @@ describe('App', function () {
 
         it('should send only empty email and only text', function (done) {
             chai.request(app)
-                .post('/getUpdateEmailList')
+                .post('/api/getUpdateEmailList')
                 .set('content-type', 'application/json')
                 .send({ sender:"", text: "Hello World! one@gmail.com" })
                 .then(function (res) {
@@ -916,7 +916,7 @@ describe('App', function () {
 
         it('should send only empty email and empty string text', function (done) {
             chai.request(app)
-                .post('/getUpdateEmailList')
+                .post('/api/getUpdateEmailList')
                 .set('content-type', 'application/json')
                 .send({ sender:"", text: ""})
                 .then(function (res) {
@@ -942,7 +942,7 @@ describe('App', function () {
 
         it('should send only email and not text', function (done) {
             chai.request(app)
-                .post('/getUpdateEmailList')
+                .post('/api/getUpdateEmailList')
                 .set('content-type', 'application/json')
                 .send({ sender: email1})
                 .then(function (res) {
@@ -968,7 +968,7 @@ describe('App', function () {
 
         it('should send only text and not email', function (done) {
             chai.request(app)
-                .post('/getUpdateEmailList')
+                .post('/api/getUpdateEmailList')
                 .set('content-type', 'application/json')
                 .send({ text: "Hello World! one@gmail.com"})
                 .then(function (res) {
