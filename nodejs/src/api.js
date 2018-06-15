@@ -273,13 +273,6 @@ router.post('/getUpdateEmailList', function (req, res, next) {
     }, sender, jsonResponse)
 })
 
-router.get('/tools/drop', function (req, res, next) {
-    neo4jHelper.dropDb(function (err, result) {
-        if (err) return next(err);
-        res.json(result);
-    });
-});
-
 function dbConnectionError(err, res) {
     res.status(400);
     if (err.code === 'ServiceUnavailable') {
