@@ -39,33 +39,20 @@ app.post('/addConnection', function (req, res, next) {
     }
 
     neo4jHelper.findRelation(function (err, records, userEmail, followerEmail, jsonResponse) {
-        if (err) return next(err);
+        if (err) return dbConnectionError(err, res);
         // when connection dosen't exist
         if (records.length === 0) {
             neo4jHelper.findBlockConnection(function (err, records, userEmail, followerEmail, jsonResponse) {
-                if (err) return next(err);
+                if (err) return dbConnectionError(err, res);
                 // connects are ok to be added
                 if (records.length === 0) {
                     neo4jHelper.createConnection(function (err, node) {
-                        if (err) {
-                            if (err.code === 'ServiceUnavailable') {
-                                jsonResponse.message = "Our hamsters powering the site is currently taking a break. Please try again later.";
-                                jsonResponse.code = 2;
-                            }
-                            else {
-                                jsonResponse.message = "It seems that Bill has forgotten to pay our power bill. Please try again in awhile.";
-                                jsonResponse.code = 1;
-                            }
-                            jsonResponse.success = false;
-                            return res.json(jsonResponse)
-                        }
-                        else {
-                            jsonResponse.connectionMade.push([userEmail, followerEmail]);
-                            jsonResponse.success = true;
-                            jsonResponse.message = "Connections Created";
-                            jsonResponse.code = 0;
-                            return res.json(jsonResponse)
-                        }
+                        if (err) return dbConnectionError(err, res);
+                        jsonResponse.connectionMade.push([userEmail, followerEmail]);
+                        jsonResponse.success = true;
+                        jsonResponse.message = "Connections Created";
+                        jsonResponse.code = 0;
+                        return res.json(jsonResponse)
                     }, userEmail, followerEmail, jsonResponse)
                 }
                 else {
@@ -85,10 +72,6 @@ app.post('/addConnection', function (req, res, next) {
             jsonResponse.code = 0;
             return res.json(jsonResponse)
         }
-        // handles edge case where error did not trigger of records neither 0 or more than 0 eg. -1
-        else {
-            return next(err);
-        }
     }, friends[0], friends[1], jsonResponse)
 })
 
@@ -104,7 +87,7 @@ app.post('/getFriendList', function (req, res, next) {
 
     var email = req.body.email;
     neo4jHelper.findFollowNode(function (err, records) {
-        if (err) return next(err);
+        if (err) return dbConnectionError(err, res);
         var jsonResponse = {
             friends: [],
             count: 0
@@ -151,7 +134,7 @@ app.post('/getCommonFriendList', function (req, res, next) {
 
     var friends = req.body.friends;
     neo4jHelper.findCommonNode(function (err, records) {
-        if (err) return next(err);
+        if (err) return dbConnectionError(err, res);
         var jsonResponse = {
             friends: [],
             count: 0
@@ -197,29 +180,16 @@ app.post('/addSubscription', function (req, res, next) {
     var target = req.body.target;
 
     neo4jHelper.findSubscription(function (err, records, requestor, target, jsonResponse) {
-        if (err) return next(err);
+        if (err) return dbConnectionError(err, res);
         // when connection dosen't exist
         if (records.length === 0) {
             neo4jHelper.createSubscription(function (err, node) {
-                if (err) {
-                    if (err.code === 'ServiceUnavailable') {
-                        jsonResponse.message = "Our hamsters powering the site is currently taking a break. Please try again later.";
-                        jsonResponse.code = 2;
-                    }
-                    else {
-                        jsonResponse.message = "It seems that Bill has forgotten to pay our power bill. Please try again in awhile.";
-                        jsonResponse.code = 1;
-                    }
-                    jsonResponse.success = false;
-                    return res.json(jsonResponse)
-                }
-                else {
-                    jsonResponse.subscriptionMade.push([requestor, target]);
-                    jsonResponse.success = true;
-                    jsonResponse.message = "Connections Created";
-                    jsonResponse.code = 0;
-                    return res.json(jsonResponse)
-                }
+                if (err) return dbConnectionError(err, res);
+                jsonResponse.subscriptionMade.push([requestor, target]);
+                jsonResponse.success = true;
+                jsonResponse.message = "Connections Created";
+                jsonResponse.code = 0;
+                return res.json(jsonResponse)
             }, requestor, target, jsonResponse)
         }
         // when connection exist
@@ -229,10 +199,6 @@ app.post('/addSubscription', function (req, res, next) {
             jsonResponse.message = "Connections Exist";
             jsonResponse.code = 0;
             return res.json(jsonResponse)
-        }
-        // handles edge case where error did not trigger of records neither 0 or more than 0 eg. -1
-        else {
-            return next(err);
         }
     }, requestor, target, jsonResponse)
 })
@@ -260,25 +226,12 @@ app.post('/blockConnection', function (req, res, next) {
         // when connection dosen't exist
         if (records.length === 0) {
             neo4jHelper.createBlockConnection(function (err, node) {
-                if (err) {
-                    if (err.code === 'ServiceUnavailable') {
-                        jsonResponse.message = "Our hamsters powering the site is currently taking a break. Please try again later.";
-                        jsonResponse.code = 2;
-                    }
-                    else {
-                        jsonResponse.message = "It seems that Bill has forgotten to pay our power bill. Please try again in awhile.";
-                        jsonResponse.code = 1;
-                    }
-                    jsonResponse.success = false;
-                    return res.json(jsonResponse)
-                }
-                else {
-                    jsonResponse.blocksMade.push([requestor, target]);
-                    jsonResponse.success = true;
-                    jsonResponse.message = "Connections Created";
-                    jsonResponse.code = 0;
-                    return res.json(jsonResponse)
-                }
+                if (err) return dbConnectionError(err, res);
+                jsonResponse.blocksMade.push([requestor, target]);
+                jsonResponse.success = true;
+                jsonResponse.message = "Connections Created";
+                jsonResponse.code = 0;
+                return res.json(jsonResponse)
             }, requestor, target, jsonResponse)
         }
         // when connection exist
@@ -288,10 +241,6 @@ app.post('/blockConnection', function (req, res, next) {
             jsonResponse.message = "Connections Exist";
             jsonResponse.code = 0;
             return res.json(jsonResponse)
-        }
-        // handles edge case where error did not trigger of records neither 0 or more than 0 eg. -1
-        else {
-            return next(err);
         }
     }, requestor, target, jsonResponse)
 })
@@ -303,6 +252,20 @@ app.get('/tools/drop', function (req, res, next) {
     });
 });
 
+function dbConnectionError(err, res) {
+    res.status(400);
+    if (err.code === 'ServiceUnavailable') {
+        jsonResponse.message = "Our hamsters powering the site is currently taking a break. Please try again later.";
+        jsonResponse.code = 2;
+    }
+    else {
+        jsonResponse.message = "It seems that Bill has forgotten to pay our power bill. Please try again in awhile.";
+        jsonResponse.code = 1;
+    }
+    jsonResponse.success = false;
+    return res.json(jsonResponse)
+}
+
 app.use(function (req, res, next) {
     res.redirect('/api-docs');
 });
@@ -310,7 +273,7 @@ app.use(function (req, res, next) {
 
 app.use(function (err, req, res, next) {
     res.status(err.status || 500);
-    res.json({ "success": false, "message": "Uh-oh, Something terrible has went wrong!", "code": 1 });
+    res.json({ "success": false, "message": "Uh-oh, Something terrible has went wrong!", "code": -1 });
 });
 
 // Use middleware to set the default Content-Type
