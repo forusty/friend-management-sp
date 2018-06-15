@@ -8,18 +8,13 @@ info:
   license:
     name: "Apache 2.0"
     url: "http://www.apache.org/licenses/LICENSE-2.0.html"
-host: "localhost:8080"
-basePath: "/v1"
-tags:
-- name: "management"
-  description: "management of friend connection"
+host: "localhost:3000"
+basePath: "/api"
 schemes:
 - "http"
 paths:
   /addConnection:
     post:
-      tags:
-      - "management"
       summary: "Add connections between 2 email address"
       description: ""
       consumes:
@@ -44,8 +39,6 @@ paths:
           description: "-1 - Unknown Error"
   /getFriendList:
     post:
-      tags:
-      - "management"
       summary: "Retrieve friends list for an email address"
       description: ""
       consumes:
@@ -70,8 +63,6 @@ paths:
           description: "-1 - Unknown Error"
   /getCommonFriendList:
     post:
-      tags:
-      - "management"
       summary: "Common friends list between 2 email address"
       description: ""
       consumes:
@@ -96,8 +87,6 @@ paths:
           description: "-1 - Unknown Error"
   /addSubscription:
     post:
-      tags:
-      - "management"
       summary: "Add a subscription for 2 email addresses"
       description: ""
       consumes:
@@ -122,8 +111,6 @@ paths:
           description: "-1 - Unknown Error"
   /blockConnection:
     post:
-      tags:
-      - "management"
       summary: "Block connections between 2 email address"
       description: ""
       consumes:
@@ -142,6 +129,30 @@ paths:
           description: "Codes\n0 - No error"
           schema:
               $ref: "#/definitions/BlockResponse"
+        400:
+          description: "Codes\n1 - Generic Error Code\n2 - Database Connection Issues\n4 - Missing Key or Empty Value"
+        500:
+          description: "-1 - Unknown Error"
+  /getUpdateEmailList:
+    post:
+      summary: "Email list that can receive updates from an email address"
+      description: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: true
+        description: "Object that contains sender email and text that might have mentions in it"
+        schema:
+          $ref: "#/definitions/UpdatesList"
+      responses:
+        200:
+          description: "Codes\n0 - No error"
+          schema:
+              $ref: "#/definitions/UpdatesListResponse"
         400:
           description: "Codes\n1 - Generic Error Code\n2 - Database Connection Issues\n4 - Missing Key or Empty Value"
         500:
@@ -183,6 +194,13 @@ definitions:
       requestor:
         type: "string"
       target:
+        type: "string"      
+  UpdatesList:
+    type: "object"
+    properties:
+      sender:
+        type: "string"
+      text:
         type: "string"
   ConnectionResponse:
     type: "object"
@@ -220,6 +238,20 @@ definitions:
         type: "array"
         items:
           type: "string"
+  UpdatesListResponse:
+    type: "object"
+    properties:
+      success:
+        type: "boolean"
+      message:
+        type: "string"
+      code:
+        type: "integer"
+        format: "int32"
+      recipients:
+        type: "array"
+        items:
+          type: "string"
   SubscriptionResponse:
     type: "object"
     properties:
@@ -248,10 +280,6 @@ definitions:
       code:
         type: "integer"
         format: "int32"
-        enum:
-        - 0
-        - 1
-        - 2
       count:
         type: "integer"
         format: "int32"
