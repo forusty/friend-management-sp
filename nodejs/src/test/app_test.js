@@ -17,8 +17,8 @@ describe('App', function () {
     before(function (done) {
         // run incase after case failed
         neo4jHelper.dropDb(function (err, result) {
-            if (err) return err;
-            done();
+			if (err) { done(err); }
+			else { done(); };
         });
     });
 
@@ -243,6 +243,35 @@ describe('App', function () {
 
                     expect(res.body).to.have.property('blocksExist');
                     expect(res.body.blocksExist).to.be.a('array').to.have.lengthOf(1);
+                    done();
+                }).catch(function (err) {
+                    done(err);
+                });
+        });
+
+        it('should create a connection between 2 blocked contacts', function (done) {
+            chai.request(app)
+                .post('/addConnection')
+                .set('content-type', 'application/json')
+                .send({ friends: [email2, email3] })
+                .then(function (res) {
+                    expect(res).to.have.status(200);
+                    expect(res.body).to.be.a('object');
+
+                    expect(res.body).to.have.property('success');
+                    expect(res.body.success).to.be.false;
+
+                    expect(res.body).to.have.property('message');
+                    expect(res.body.message).to.be.a('string');
+
+                    expect(res.body).to.have.property('code');
+                    expect(res.body.code).to.be.a('number').to.equal(5);
+
+                    expect(res.body).to.have.property('connectionMade');
+                    expect(res.body.connectionMade).to.be.a('array').to.have.lengthOf(0);
+
+                    expect(res.body).to.have.property('connectionExist');
+                    expect(res.body.connectionExist).to.be.a('array').to.have.lengthOf(0);
                     done();
                 }).catch(function (err) {
                     done(err);

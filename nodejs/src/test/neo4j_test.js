@@ -5,11 +5,11 @@ describe('neo4jFunc Test', function () {
 	before(function (done) {
 		// run incase after case failed
 		neo4jHelper.dropDb(function (err, result) {
-			if (err) return err;
-			done();
+			if (err) { done(err); }
+			else { done(); };
 		});
 	});
-	
+
 	describe('findRelation()', function () {
 		var userEmail = "youjun89@gmail.com";
 		var followerEmail = "youjun9@gmail.com";
@@ -17,17 +17,19 @@ describe('neo4jFunc Test', function () {
 		before(function (done) {
 			// run incase after case failed
 			neo4jHelper.createConnection(function (err, node) {
-				done();
+				if (err) { done(err); }
+				else { done(); };
 			}, userEmail, followerEmail)
 		});
 
 		it('find relation between 2 nodes exist', function (done) {
 			neo4jHelper.findRelation(function (err, records) {
-				if (err) {
-					return err;
+				if (err) { done(err); }
+				else {
+					expect(records).to.have.length.above(0);
+					done();
 				};
-				expect(records).to.have.length.above(0);
-				done();
+
 			}, userEmail, followerEmail)
 		});
 	});
