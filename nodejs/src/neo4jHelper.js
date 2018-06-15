@@ -164,6 +164,61 @@ var neo4jHelper = {
         });
     },
 
+    findUpdateEmailList: function (callback, requestor, target, jsonResponse) {
+        var query = "Match (a:Person) where a.email={requestorParam} ";
+        query += "Match (b:Person) where b.email={targetParam} ";
+        query += "Match (a)-[:BLOCKS]->(b) return a,b";
+
+        const session = driver.session();
+        const resultPromise = session.run(query, { requestorParam: requestor, targetParam: target });
+
+        resultPromise.then(result => {
+            session.close();
+            // on application exit:
+            driver.close();
+            callback(null, result.records, requestor, target, jsonResponse);
+        }).catch(function (error) {
+            callback(error, null,requestor,target,jsonResponse);
+        });
+    },
+
+    findUnblockConnectionByList: function (callback, email, targetList, jsonResponse) {
+        var query = "WITH {targetListParam} as emailList ";
+        query += "Match (b:Person) where b.email={emailParam} ";
+        query += "Match (a:Person) where a.email in emailList and NOT (a)-[:BLOCKS]-(b) ";
+        query += "Return DISTINCT a.email as email";
+
+        const session = driver.session();
+        const resultPromise = session.run(query, { emailParam: email, targetListParam: targetList });
+
+        resultPromise.then(result => {
+            session.close();
+            // on application exit:
+            driver.close();
+            callback(null, result.records, jsonResponse);
+        }).catch(function (error) {
+            callback(error, null,jsonResponse);
+        });
+    },
+
+    findConnectOrSubscriptioneNodes: function (callback, email, jsonResponse) {
+        var query = "Match (b:Person)-[:CONNECT]-(a:Person) WHERE a.email={emailParam} RETURN b.email as email ";
+        query += "UNION ";
+        query += "Match (b:Person)-[:SUBSCRIBE]->(a:Person) WHERE a.email={emailParam} Return DISTINCT b.email as email";
+
+        const session = driver.session();
+        const resultPromise = session.run(query, { emailParam: email });
+
+        resultPromise.then(result => {
+            session.close();
+            // on application exit:
+            driver.close();
+            callback(null, result.records, jsonResponse);
+        }).catch(function (error) {
+            callback(error, null,jsonResponse);
+        });
+    },
+
     dropDb: function (callback) {
         const session = driver.session();
         const resultPromise = session.run(
