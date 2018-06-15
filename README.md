@@ -1,17 +1,18 @@
 # SP Friend Management Interview Test
 ## Technologies Used
-- Docker 
+### Docker 
 Docker was chosen because of how portable it is to deploy it anywhere and also because it was easier to deploy and test the application instead of hosting it on a cloud server. When done, the same docker containers can easily be ported over to a cloud server like AWS.
 
-- Neo4J
+### Neo4J
 Neo4J was chosen over a relation db like MySQL because it was easy to map relations between two entity and querying for this relation using the Cypher Query Lanaguage.
 
-- NodeJS
-    - ExpressJS
-    I am more familiar with ExpressJS and because it is one of the more popular framework out there so any issues encountered can be easily found on stackoverflow
-    - Mocha
-        - Chai
-- Swagger 
+### NodeJS
+#### ExpressJS
+I am more familiar with ExpressJS and because it is one of the more popular framework out there so any issues encountered can be easily found on stackoverflow
+### Mocha
+### Chai
+
+### Swagger 
 Swagger was chosen because i like how the UI is being presented to the user
 
 ## Start up Docker
