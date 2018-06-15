@@ -22,7 +22,6 @@ paths:
       - "management"
       summary: "Add connections between 2 email address"
       description: ""
-      operationId: "addPet"
       consumes:
       - "application/json"
       produces:
@@ -31,17 +30,18 @@ paths:
       - in: "body"
         name: "body"
         required: true
-        description: "Pet object that needs to be added to the store"
-        required: true
+        description: "Object that contains 2 email address to create connection for"
         schema:
           $ref: "#/definitions/Connection"
       responses:
         200:
-          description: "Codes -Description\n0 - No error\n1 - Generic Error Code\n2 - Neo4J DB not up (ServiceUnavailable)\n3 - Less than 2 email address given\n4 - Missing Key or Empty Value\n5 - Connections cannot be made between blocked contacts"
+          description: "Codes\n0 - No error\n5 - Blocked contacts cannot be added"
           schema:
-            $ref: "#/definitions/ConnectionResponse"
-        405:
-          description: "Invalid input"
+              $ref: "#/definitions/ConnectionResponse"
+        400:
+          description: "Codes\n1 - Generic Error Code\n2 - Database Connection Issues\n4 - Missing Key or Empty Value"
+        500:
+          description: "-1 - Unknown Error"
   /getFriendList:
     post:
       tags:
@@ -57,21 +57,22 @@ paths:
         in: "body"
         description: "Get friendlist of a given email address"
         required: true
-        type: "object"
         schema:
           $ref: "#/definitions/GetFriend"
       responses:
         200:
-          description: "Codes -Description\n0 - No error\n1 - Generic Error Code\n2 - Neo4J DB not up (ServiceUnavailable)\n3 - Less than 2 email address given\n4 - No email given"
+          description: "Codes\n0 - No error"
           schema:
             $ref: "#/definitions/GetFriendResponse"
         400:
-          description: "Invalid status value"
+          description: "Codes\n1 - Generic Error Code\n2 - Neo4J DB not up (ServiceUnavailable)\n4 - Missing Key or Empty Value"
+        500:
+          description: "-1 - Unknown Error"
   /getCommonFriendList:
     post:
       tags:
       - "management"
-      summary: "Common friends list between two email addresses"
+      summary: "Common friends list between 2 email address"
       description: ""
       consumes:
       - "application/json"
@@ -82,33 +83,84 @@ paths:
         in: "body"
         description: "Get friendlist of a given email address"
         required: true
-        type: "object"
         schema:
           $ref: "#/definitions/GetCommonFriend"
       responses:
         200:
-          description: "Codes -Description\n0 - No error\n1 - Generic Error Code\n2 - Neo4J DB not up (ServiceUnavailable)\n3 - Less than 2 email address given\n4 - No email given"
+          description: "Codes\n0 - No error"
           schema:
             $ref: "#/definitions/GetFriendResponse"
         400:
-          description: "Invalid tag value"
+          description: "Codes\n1 - Generic Error Code\n2 - Database Connection Issues\n3 - Email address provided is 1 or less\n4 - Missing Key or Empty Value"
+        500:
+          description: "-1 - Unknown Error"
+  /addSubscription:
+    post:
+      tags:
+      - "management"
+      summary: "Add a subscription for 2 email addresses"
+      description: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "body"
+        in: "body"
+        description: "Object that add a subscription from requestor email address to target email address"
+        required: true
+        schema:
+          $ref: "#/definitions/Subscription"
+      responses:
+        200:
+          description: "Codes -Description\n0 - No error"
+          schema:
+            $ref: "#/definitions/SubscriptionResponse"
+        400:
+          description: "Codes\n1 - Generic Error Code\n2 - Database Connection Issues\n4 - Missing Key or Empty Value"
+        500:
+          description: "-1 - Unknown Error"
+  /blockConnection:
+    post:
+      tags:
+      - "management"
+      summary: "Block connections between 2 email address"
+      description: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: true
+        description: "Object that blocks target email address from requestor"
+        schema:
+          $ref: "#/definitions/Block"
+      responses:
+        200:
+          description: "Codes\n0 - No error"
+          schema:
+              $ref: "#/definitions/BlockResponse"
+        400:
+          description: "Codes\n1 - Generic Error Code\n2 - Database Connection Issues\n4 - Missing Key or Empty Value"
+        500:
+          description: "-1 - Unknown Error"
 definitions:
   Connection:
     type: "object"
     properties:
       email:
-        type: "array"
         minItems: 2
         uniqueItems: true
-        required: true
+        type: "array"
         items:
           type: "string"
   GetFriend:
     type: "object"
     properties:
       email:
-        type: "string"          
-        allowEmptyValue: false 
+        type: "string"       
   GetCommonFriend:
     type: "object"
     properties:
@@ -116,9 +168,22 @@ definitions:
         type: "array"          
         minItems: 2
         uniqueItems: true
-        required: true
         items:
-          type: "string"
+          type: "string"       
+  Subscription:
+    type: "object"
+    properties:
+      requestor:
+        type: "string"
+      target:
+        type: "string"      
+  Block:
+    type: "object"
+    properties:
+      requestor:
+        type: "string"
+      target:
+        type: "string"
   ConnectionResponse:
     type: "object"
     properties:
@@ -129,11 +194,47 @@ definitions:
       code:
         type: "integer"
         format: "int32"
-        enum:
-        - 0
-        - 1
-        - 2
+      connectionMade:
+        type: "array"
+        items:
+          type: "string"
       connectionExist:
+        type: "array"
+        items:
+          type: "string"
+  BlockResponse:
+    type: "object"
+    properties:
+      success:
+        type: "boolean"
+      message:
+        type: "string"
+      code:
+        type: "integer"
+        format: "int32"
+      blocksMade:
+        type: "array"
+        items:
+          type: "string"
+      blocksExist:
+        type: "array"
+        items:
+          type: "string"
+  SubscriptionResponse:
+    type: "object"
+    properties:
+      success:
+        type: "boolean"
+      message:
+        type: "string"
+      code:
+        type: "integer"
+        format: "int32"
+      subscriptionMade:
+        type: "array"
+        items:
+          type: "string"
+      subscriptionExist:
         type: "array"
         items:
           type: "string"
@@ -155,24 +256,6 @@ definitions:
         type: "integer"
         format: "int32"
       friends:
-        type: "array"
-        items:
-          type: "string"
-  StandardResponse:
-    type: "object"
-    properties:
-      success:
-        type: "boolean"
-      message:
-        type: "string"
-      code:
-        type: "integer"
-        format: "int32"
-        enum:
-        - 0
-        - 1
-        - 2
-      connectionExist:
         type: "array"
         items:
           type: "string"
