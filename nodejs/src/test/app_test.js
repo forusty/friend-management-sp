@@ -191,7 +191,25 @@ describe('App', function () {
     });
 
     describe('/blockConnection', function () {
-        it('should send requestor and target', function (done) {
+        after(function (done) {
+            // create another subscription
+            chai.request(app)
+                .post('/blockConnection')
+                .set('content-type', 'application/json')
+                .send({ requestor: email3, target: email1 })
+                .then(function (res) {
+                    expect(res).to.have.status(200);
+                    expect(res.body).to.be.a('object');
+
+                    expect(res.body).to.have.property('success');
+                    expect(res.body.success).to.be.true;
+                    done();
+                }).catch(function (err) {
+                    done(err);
+                });
+        });
+
+        it('should send a valid requestor and target', function (done) {
             chai.request(app)
                 .post('/blockConnection')
                 .set('content-type', 'application/json')
@@ -650,23 +668,23 @@ describe('App', function () {
     });
 
     describe('/addSubscription', function () {
-        // after(function (done) {
-        //     // runs after all tests in this block
-        //     chai.request(app)
-        //         .post('/addConnection')
-        //         .set('content-type', 'application/json')
-        //         .send({ friends: [email1, email3] })
-        //         .then(function (res) {
-        //             expect(res).to.have.status(200);
-        //             expect(res.body).to.be.a('object');
+        after(function (done) {
+            // create another subscription
+            chai.request(app)
+                .post('/addSubscription')
+                .set('content-type', 'application/json')
+                .send({ requestor: email2, target: email1 })
+                .then(function (res) {
+                    expect(res).to.have.status(200);
+                    expect(res.body).to.be.a('object');
 
-        //             expect(res.body).to.have.property('success');
-        //             expect(res.body.success).to.be.true;
-        //             done();
-        //         }).catch(function (err) {
-        //             done(err);
-        //         });
-        // });
+                    expect(res.body).to.have.property('success');
+                    expect(res.body.success).to.be.true;
+                    done();
+                }).catch(function (err) {
+                    done(err);
+                });
+        });
 
         it('should send requestor and target', function (done) {
             chai.request(app)
@@ -810,6 +828,164 @@ describe('App', function () {
                     expect(res.body).to.have.property('subscriptionExist');
                     expect(res.body.subscriptionExist).to.be.a('array').to.have.lengthOf(0);
 
+                    done();
+                }).catch(function (err) {
+                    done(err);
+                });
+        });
+    });
+
+    describe('/getUpdateEmailList', function () {
+        it('should send a valid email and text', function (done) {
+            chai.request(app)
+                .post('/getUpdateEmailList')
+                .set('content-type', 'application/json')
+                .send({ sender: email1, text: "Hello World! one@gmail.com" })
+                .then(function (res) {
+                    expect(res).to.have.status(200);
+                    expect(res.body).to.be.a('object');
+
+                    expect(res.body).to.have.property('success');
+                    expect(res.body.success).to.be.true;
+
+                    expect(res.body).to.have.property('message');
+                    expect(res.body.message).to.be.a('string');
+
+                    expect(res.body).to.have.property('code');
+                    expect(res.body.code).to.be.a('number').to.equal(0);
+
+                    expect(res.body).to.have.property('recipients');
+                    expect(res.body.recipients).to.be.a('array').to.have.lengthOf(2);
+                    done();
+                }).catch(function (err) {
+                    done(err);
+                });
+        });
+
+        it('should send only email and empty string text', function (done) {
+            chai.request(app)
+                .post('/getUpdateEmailList')
+                .set('content-type', 'application/json')
+                .send({ sender:email1, text: ""})
+                .then(function (res) {
+                    expect(res).to.have.status(200);
+                    expect(res.body).to.be.a('object');
+
+                    expect(res.body).to.have.property('success');
+                    expect(res.body.success).to.be.true;
+
+                    expect(res.body).to.have.property('message');
+                    expect(res.body.message).to.be.a('string');
+
+                    expect(res.body).to.have.property('code');
+                    expect(res.body.code).to.be.a('number').to.equal(0);
+
+                    expect(res.body).to.have.property('recipients');
+                    expect(res.body.recipients).to.be.a('array').to.have.lengthOf(1);
+                    done();
+                }).catch(function (err) {
+                    done(err);
+                });
+        });
+
+        it('should send only empty email and only text', function (done) {
+            chai.request(app)
+                .post('/getUpdateEmailList')
+                .set('content-type', 'application/json')
+                .send({ sender:"", text: "Hello World! one@gmail.com" })
+                .then(function (res) {
+                    expect(res).to.have.status(400);
+                    expect(res.body).to.be.a('object');
+
+                    expect(res.body).to.have.property('success');
+                    expect(res.body.success).to.be.false;
+
+                    expect(res.body).to.have.property('message');
+                    expect(res.body.message).to.be.a('string');
+
+                    expect(res.body).to.have.property('code');
+                    expect(res.body.code).to.be.a('number').to.equal(4);
+
+                    expect(res.body).to.have.property('recipients');
+                    expect(res.body.recipients).to.be.a('array').to.have.lengthOf(0);
+                    done();
+                }).catch(function (err) {
+                    done(err);
+                });
+        });
+
+        it('should send only empty email and empty string text', function (done) {
+            chai.request(app)
+                .post('/getUpdateEmailList')
+                .set('content-type', 'application/json')
+                .send({ sender:"", text: ""})
+                .then(function (res) {
+                    expect(res).to.have.status(400);
+                    expect(res.body).to.be.a('object');
+
+                    expect(res.body).to.have.property('success');
+                    expect(res.body.success).to.be.false;
+
+                    expect(res.body).to.have.property('message');
+                    expect(res.body.message).to.be.a('string');
+
+                    expect(res.body).to.have.property('code');
+                    expect(res.body.code).to.be.a('number').to.equal(4);
+
+                    expect(res.body).to.have.property('recipients');
+                    expect(res.body.recipients).to.be.a('array').to.have.lengthOf(0);
+                    done();
+                }).catch(function (err) {
+                    done(err);
+                });
+        });
+
+        it('should send only email and not text', function (done) {
+            chai.request(app)
+                .post('/getUpdateEmailList')
+                .set('content-type', 'application/json')
+                .send({ sender: email1})
+                .then(function (res) {
+                    expect(res).to.have.status(400);
+                    expect(res.body).to.be.a('object');
+
+                    expect(res.body).to.have.property('success');
+                    expect(res.body.success).to.be.false;
+
+                    expect(res.body).to.have.property('message');
+                    expect(res.body.message).to.be.a('string');
+
+                    expect(res.body).to.have.property('code');
+                    expect(res.body.code).to.be.a('number').to.equal(4);
+
+                    expect(res.body).to.have.property('recipients');
+                    expect(res.body.recipients).to.be.a('array').to.have.lengthOf(0);
+                    done();
+                }).catch(function (err) {
+                    done(err);
+                });
+        });
+
+        it('should send only text and not email', function (done) {
+            chai.request(app)
+                .post('/getUpdateEmailList')
+                .set('content-type', 'application/json')
+                .send({ text: "Hello World! one@gmail.com"})
+                .then(function (res) {
+                    expect(res).to.have.status(400);
+                    expect(res.body).to.be.a('object');
+
+                    expect(res.body).to.have.property('success');
+                    expect(res.body.success).to.be.false;
+
+                    expect(res.body).to.have.property('message');
+                    expect(res.body.message).to.be.a('string');
+
+                    expect(res.body).to.have.property('code');
+                    expect(res.body.code).to.be.a('number').to.equal(4);
+
+                    expect(res.body).to.have.property('recipients');
+                    expect(res.body.recipients).to.be.a('array').to.have.lengthOf(0);
                     done();
                 }).catch(function (err) {
                     done(err);

@@ -10,10 +10,12 @@ describe('neo4jFunc Test', function () {
 		});
 	});
 
-	describe('findRelation()', function () {
-		var userEmail = "youjun89@gmail.com";
-		var followerEmail = "youjun9@gmail.com";
+	var userEmail = "youjun89@gmail.com";
+	var followerEmail = "youjun9@gmail.com";
+	var extraEmail = "me@gmail.com";
+	var extraEmail2 = "us@gmail.com";
 
+	describe('findRelation()', function () {
 		before(function (done) {
 			// run incase after case failed
 			neo4jHelper.createConnection(function (err, node) {
@@ -31,6 +33,46 @@ describe('neo4jFunc Test', function () {
 				};
 
 			}, userEmail, followerEmail)
+		});
+	});
+
+	describe('findUnblockConnectionByList()', function () {
+		before(function (done) {
+			// run incase after case failed
+			neo4jHelper.createConnection(function (err, node) {
+				if (err) { done(err); }
+				else {
+					neo4jHelper.createConnection(function (err, node) {
+						if (err) { done(err); }
+						else { done(); };
+					}, userEmail, extraEmail)
+				};
+			}, userEmail, extraEmail)
+		});
+
+		it('find list of email that has not block user email', function (done) {
+			neo4jHelper.findUnblockConnectionByList(function (err, records,jsonResponse) {
+				if (err) { done(err); }
+				else { 
+					expect(records).to.be.a('array').to.have.lengthOf(2);
+					done(); 
+				};
+			}, userEmail, [followerEmail,extraEmail,extraEmail,extraEmail2])
+		});
+	});
+
+	describe('findConnectOrSubscriptioneNodes()', function () {
+		it('find list of email that is connected or subscribe to userEmail', function (done) {
+			neo4jHelper.findConnectOrSubscriptioneNodes(function (err, records,jsonResponse) {
+				if (err) { done(err); }
+				else { 
+					// records.map(record => { // Iterate through records
+					// 	console.log(record.get("email"))
+					// });
+					expect(records).to.be.a('array').to.have.lengthOf(2);
+					done(); 
+				};
+			}, userEmail, [followerEmail,extraEmail,extraEmail2])
 		});
 	});
 });
